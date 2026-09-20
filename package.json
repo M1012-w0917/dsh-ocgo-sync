@@ -1,6 +1,6 @@
 {
   "name": "dsh-ocgo-sync",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "让 DeepSeek Harness（网页版 / 桌面版）用上最新的 OpenCode Go 模型清单",
   "type": "module",
   "bin": {
