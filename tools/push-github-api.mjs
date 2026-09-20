@@ -174,13 +174,20 @@ async function main() {
   }
 
   try {
-    await api('PATCH', '/repos/' + owner + '/' + name, token, {
-      description: pkg.description,
-      topics: ['dsh', 'deepseek-harness', 'opencode', 'model-catalog'],
-    });
-    console.log('已更新仓库描述与 topics');
+    await api('PATCH', '/repos/' + owner + '/' + name, token, { description: pkg.description });
+    console.log('已更新仓库描述');
   } catch (e) {
-    console.log('（更新仓库信息失败，忽略：' + e.message + '）');
+    console.log('（更新描述失败，忽略：' + e.message + '）');
+  }
+
+  try {
+    // topics 必须用专用端点（PATCH /repos 里的 topics 会被忽略）
+    const res = await api('PUT', '/repos/' + owner + '/' + name + '/topics', token, {
+      names: ['dsh', 'deepseek-harness', 'opencode', 'model-catalog', 'llm', 'desktop'],
+    });
+    console.log('已设置 topics: ' + (res.names || []).join(', '));
+  } catch (e) {
+    console.log('（设置 topics 失败，忽略：' + e.message + '）');
   }
 
   let baseCommit = null;
