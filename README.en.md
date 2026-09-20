@@ -16,7 +16,7 @@ This tool synchronizes both: it locates every copy on the machine, de-duplicates
 
 ```bash
 curl -L -H "Accept: application/vnd.github.raw" -o sync.mjs \
-  https://api.github.com/repos/M1012-w0917/dsh-opencode-go-sync/contents/bin/dsh-ocgo-sync.mjs
+  https://api.github.com/repos/M1012-w0917/dsh-ocgo-sync/contents/bin/dsh-ocgo-sync.mjs
 
 node sync.mjs --dry-run    # preview
 node sync.mjs              # apply
