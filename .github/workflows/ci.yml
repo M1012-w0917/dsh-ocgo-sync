@@ -20,7 +20,7 @@ jobs:
           node-version: '20'
 
       # 用一份「出厂版」目录文件当夹具，模拟 DSH Desktop 的初始状态：
-      # 27 个模型、没有 deepseek-v4.1-flash。
+      # 删除几个当前快照中的模型，再验证离线同步能完整恢复。
       - name: Build fixture
         shell: bash
         run: |
@@ -39,21 +39,41 @@ jobs:
           fs.writeFileSync(out, JSON.stringify(j, null, 2));
           "
 
+      - name: Disable network for offline test
+        shell: bash
+        run: |
+          cat > fixture/no-network.cjs <<'EOF'
+          globalThis.fetch = () => {
+            throw new Error('network access forbidden in offline test');
+          };
+          EOF
+
       - name: Run offline sync against fixture
+        env:
+          NODE_OPTIONS: --require=./fixture/no-network.cjs
         run: node bin/dsh-ocgo-sync.mjs --offline --root fixture
 
-      - name: Assert the new model appeared
+      - name: Assert offline result matches snapshot
         shell: bash
         run: |
           node -e "
           const fs = require('fs');
           const p = 'fixture/Programs/DSH Desktop/resources/app/node_modules/@earendil-works/pi-ai/dist/providers/data/opencode-go.json';
           const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+          const snap = JSON.parse(fs.readFileSync('catalog/opencode-go.json', 'utf8'));
           const ids = new Set(Object.keys(j['openai-completions'] || {}));
-          if (!ids.has('deepseek-v4.1-flash')) { console.error('missing deepseek-v4.1-flash'); process.exit(1); }
-          const d = j['openai-completions']['deepseek-v4.1-flash'];
-          if (!d.compat) { console.error('expected compat to be inherited from a sibling'); process.exit(1); }
-          console.log('ok, models: ' + ids.size);
+          if (!ids.has('deepseek-v4.1-flash')) {
+            console.error('missing deepseek-v4.1-flash');
+            process.exit(1);
+          }
+          if (JSON.stringify(j) !== JSON.stringify(snap)) {
+            console.error('offline result differs from snapshot');
+            process.exit(1);
+          }
+          console.log('ok, models: ' + new Set(
+            ['anthropic-messages', 'openai-completions', 'openai-responses']
+              .flatMap((g) => Object.keys(j[g] || {}))
+          ).size);
           "
 
       - name: Check the backup file was written
