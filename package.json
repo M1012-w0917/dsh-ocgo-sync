@@ -1,7 +1,7 @@
 {
   "name": "dsh-ocgo-sync",
   "version": "1.0.0",
-  "description": "让 DeepSeek Harness（命令行版 / 桌面版）用上最新的 OpenCode Go 模型清单",
+  "description": "让 DeepSeek Harness（网页版 / 桌面版）用上最新的 OpenCode Go 模型清单",
   "type": "module",
   "bin": {
     "dsh-ocgo-sync": "bin/dsh-ocgo-sync.mjs"
