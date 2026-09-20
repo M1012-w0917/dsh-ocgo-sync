@@ -1,117 +1,63 @@
 # dsh-ocgo-sync
 
-Keep the **OpenCode Go model catalog in [DSH](https://github.com/deepseek-ai/deepseek-harness) up to date**
-— for both the CLI runtime and DSH Desktop.
+DSH keeps its model list in a data file inside the `pi-ai` package rather than in any config:
 
-English · [简体中文](README.md)
+    @earendil-works/pi-ai/dist/providers/data/opencode-go.json
 
-## The problem
+The CLI runtime (`~/.dsh-runtime`) refreshes that file on every launch. DSH Desktop doesn't — it uses a copy frozen at build time.
 
-The model list in DSH is not a config setting; it is a data file shipped inside `pi-ai`:
+So you end up with the gateway serving `deepseek-v4.1-flash`, the CLI offering it in the picker, and the desktop app still stopping at `deepseek-v4-flash`.
 
-```
-@earendil-works/pi-ai/dist/providers/data/opencode-go.json
-```
-
-| | behaviour of that file |
-|---|---|
-| **CLI runtime** (`~/.dsh-runtime`) | refreshed on every launch by its own sync script ✅ |
-| **DSH Desktop** | frozen at build time, never updated ❌ |
-
-So a model that the gateway has served for weeks (e.g. `deepseek-v4.1-flash`) shows up in the
-CLI but is simply missing from the DSH Desktop model picker.
-
-## Quick start
-
-### Option 1 — single file (works even where `github.com` is blocked)
-
-```bash
-curl -L -H "Accept: application/vnd.github.raw" -o sync.mjs \
-  https://api.github.com/repos/M1012-w0917/dsh-ocgo-sync/contents/bin/dsh-ocgo-sync.mjs
-node sync.mjs --dry-run      # preview
-node sync.mjs                # apply
-```
-
-On Windows PowerShell use `curl.exe` instead of `curl`.
-
-> Offline snapshot from the same API host:
-> `node sync.mjs --offline --from https://api.github.com/repos/M1012-w0917/dsh-ocgo-sync/contents/catalog/opencode-go.json`
-
-### Option 2 — whole repo
-
-```bash
-curl -L -o sync.zip https://api.github.com/repos/M1012-w0917/dsh-ocgo-sync/zipball/main
-node bin/dsh-ocgo-sync.mjs
-```
-
-### Option 3 — when GitHub is reachable
-
-```bash
-npx github:M1012-w0917/dsh-ocgo-sync
-```
+This script refreshes both. It finds every copy on the machine (CLI runtime and Desktop; copies that are really the same file get deduplicated), backs up before writing, and reads the result back to check it.
 
 ## Usage
 
+Single file, no clone, no git:
+
 ```bash
-npx github:M1012-w0917/dsh-ocgo-sync
-# or
-git clone https://github.com/M1012-w0917/dsh-ocgo-sync
-node dsh-opencode-go-sync/bin/dsh-ocgo-sync.mjs
+curl -L -H "Accept: application/vnd.github.raw" -o sync.mjs \
+  https://api.github.com/repos/M1012-w0917/dsh-opencode-go-sync/contents/bin/dsh-ocgo-sync.mjs
+
+node sync.mjs --dry-run
+node sync.mjs
 ```
 
-The tool locates every copy of that file on the machine (CLI runtime + DSH Desktop), de-duplicates
-them across junctions/symlinks, rebuilds the catalog from the gateway model list plus
-[models.dev](https://models.dev) metadata, and writes it back in place:
+On Windows PowerShell use `curl.exe`. With git installed you can also run:
 
-- backs the file up to `<file>.bak-<timestamp>` before writing
-- re-reads and validates after writing
-- preserves existing `compat` / `thinkingLevelMap` fields; new models inherit them from their
-  closest sibling by name prefix
-- never touches API keys or credential files
+```bash
+npx github:M1012-w0917/dsh-opencode-go-sync
+```
 
-### Options
+That one shells out to `git`; without it npm fails with `spawn git ENOENT`.
 
-| option | description |
-|---|---|
-| `--list` | show the files found and their model counts |
-| `--dry-run` | print the diff without writing |
-| `--offline` | no network; apply the snapshot in `catalog/` |
-| `--snapshot <file>` | use a specific snapshot file |
-| `--from <url>` | fetch the snapshot from a URL |
+## Restart afterwards
+
+The catalog is read once at startup, so DSH has to be restarted.
+
+One thing about DSH Desktop: closing the window is not enough. It spawns a separate node process for the harness, and while that process is alive it holds the session write handle. The UI then reports `SessionAlreadyOwnedError`, which looks like a broken model but is really a leftover process. Check Task Manager for stray `node.exe` first.
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `--list` | list the files found and their model counts |
+| `--dry-run` | print what would change, write nothing |
+| `--offline` | no network; use `catalog/opencode-go.json` from this repo |
+| `--snapshot <file>` / `--from <url>` | use a specific snapshot file or URL |
 | `--prune` | also drop models the gateway no longer serves (kept by default) |
-| `--emit <file>` | only regenerate a snapshot file (used to maintain this repo) |
-| `--root <dir>` | extra search root |
+| `--root <dir>` | extra search root for non-default install locations |
 
-## After it runs
+## Caveats
 
-Restart the affected DSH — the catalog is read once at startup.
+- Upgrading the desktop app overwrites its install directory, so the frozen file comes back. Run this again.
+- It writes inside the app directory; on macOS with `/Applications` you may need sudo.
+- Tested on Windows only. Linux and macOS only get a CI smoke test against a fake directory.
+- Only that one json is touched, with a `.bak-<timestamp>` left before each write.
 
-- **DSH Desktop**: fully quit and reopen. Closing the window is not enough: make sure no bundled
-  `node.exe` harness process is left behind, otherwise it keeps the session write handle and the UI
-  may report `SessionAlreadyOwnedError`.
-- **CLI runtime**: just relaunch it.
+## Where the data comes from
 
-## FAQ
+Model list: `https://opencode.ai/zen/go/v1/models`. Metadata (context size, pricing, reasoning levels): [models.dev](https://models.dev) (MIT).
 
-**Upgrading the desktop app brought the old list back.** The installer overwrites the app
-directory. Run the tool again.
+`catalog/` is a snapshot refreshed daily by GitHub Actions, for people who can't stay online long enough to fetch it themselves.
 
-**No internet at all?** Use `--offline`; this repo's `catalog/` is refreshed daily by GitHub Actions.
-
-**`github.com` unreachable?** The tool only needs `opencode.ai` and `models.dev`. To fetch this
-repo itself you can go through the API host:
-
-```bash
-curl -L -o sync.zip https://api.github.com/repos/M1012-w0917/dsh-ocgo-sync/zipball/main
-```
-
-**Is it destructive?** It rewrites exactly one data file, always leaving a timestamped backup, and
-validates the result immediately. Restore by copying the backup back.
-
-## Data sources
-
-- model list: `https://opencode.ai/zen/go/v1/models`
-- metadata: [models.dev](https://models.dev) (MIT)
-
-This project is not affiliated with OpenCode, DataElement or DeepSeek. It proxies nothing, stores
-no credentials, and the committed snapshot contains only public model metadata.
+Not affiliated with OpenCode, DataElement or DeepSeek. `catalog/` contains public model metadata only.
