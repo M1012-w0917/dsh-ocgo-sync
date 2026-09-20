@@ -1,42 +1,58 @@
 # dsh-ocgo-sync
 
-DeepSeek Harness 的模型清单不在设置里，藏在 `pi-ai` 这个包里面：
+DeepSeek Harness 的模型清单不在设置里，而是 `pi-ai` 包里的一份数据文件：
 
     @earendil-works/pi-ai/dist/providers/data/opencode-go.json
 
-命令行版（`~/.dsh-runtime`）每次启动都会自己去同步这份文件，桌面版不会 —— 它用的还是打包时冻结的那一份。
+**网页版**（命令行启动、在浏览器里用的那个）每次启动会自己同步这份文件，**桌面版**（DSH Desktop）不会 —— 它用的还是打包时冻结的那一份。
 
-结果就是：网关早就上了 `deepseek-v4.1-flash`，你在命令行版里能选，桌面版的选择器翻到底也只有 `deepseek-v4-flash`。
+所以经常出现这种情况：网关早就上了 `deepseek-v4.1-flash`，网页版里能选，桌面版的选择器翻到底也只有 `deepseek-v4-flash`。
 
-这个脚本负责把两边都刷成最新的：自己找文件（命令行版和桌面版都会找，指向同一份物理文件的会去重，只改一次），改之前备份，改完立刻回读校验。
+下面这个脚本跑一次，把两边都刷成最新的。它会自己找文件（两边都找，指向同一份物理文件的只改一次），改之前备份，改完回读校验。
 
-## 怎么用
-
-推荐单文件方式，不用 clone、不用 git：
+## 用法
 
 ```bash
 curl -L -H "Accept: application/vnd.github.raw" -o sync.mjs \
   https://api.github.com/repos/M1012-w0917/dsh-opencode-go-sync/contents/bin/dsh-ocgo-sync.mjs
 
-node sync.mjs --dry-run   # 先看看会改哪些文件
-node sync.mjs             # 确认没问题再执行
+node sync.mjs --dry-run    # 先看看会改哪些文件
+node sync.mjs              # 确认没问题再执行
 ```
 
 Windows PowerShell 里把 `curl` 换成 `curl.exe`。
 
-装了 git 的也可以用 npx：
+---
 
-```bash
-npx github:M1012-w0917/dsh-opencode-go-sync
-```
+## 一、网页版
 
-这条依赖 `git` 命令，没有的话会报 `spawn git ENOENT`，用上面的单文件方式就行。
+模型清单在这里：
 
-## 改完记得重启
+    ~/.dsh-runtime/node_modules/.pnpm/@earendil-works+pi-ai@.../dist/providers/data/opencode-go.json
 
-模型清单只在启动时读一次，得重启 DeepSeek Harness 才生效。
+顺带一提，它**每次启动本来就会自己同步**，所以正常情况下你不需要管它。跑这个脚本的意义是：不想重启、想立刻刷新模型列表的时候用一下。
 
-桌面版有个坑：只关窗口不算退出。它会另起一个 node 进程跑 harness，那个进程没退干净的话会一直占着会话的写句柄，界面会报 `SessionAlreadyOwnedError` —— 看起来像是模型坏了，其实是旧进程没走。任务管理器里确认没有残留的 `node.exe` 再重开。
+**生效方式**：重新跑一次启动脚本。
+
+## 二、桌面版
+
+模型清单在安装目录里：
+
+    %LOCALAPPDATA%\Programs\DSH Desktop\resources\app\node_modules\@earendil-works\pi-ai\dist\providers\data\opencode-go.json
+
+（`%APPDATA%\dsh-desktop` 里那份 profile 也有同名文件，但它是指向上面这个的链接，物理上只有一份。）
+
+两件事要注意：
+
+**1. 必须重启，而且只关窗口不算退出。**
+
+桌面版会另起一个 node 进程跑 harness。那个进程没退干净的话，会一直占着会话的写句柄，界面报 `SessionAlreadyOwnedError` —— 看起来像是模型坏了，其实是旧进程没走。任务管理器里确认没有残留的 `node.exe` 再重开。
+
+**2. 桌面版升级后会覆盖安装目录。**
+
+升级完那份冻结的清单又回来了，重跑一次这个脚本就行。
+
+---
 
 ## 参数
 
@@ -44,22 +60,17 @@ npx github:M1012-w0917/dsh-opencode-go-sync
 | --- | --- |
 | `--list` | 只列出找到的文件和模型数量 |
 | `--dry-run` | 只打印会改什么，不写盘 |
-| `--offline` | 不联网，用仓库里的 `catalog/opencode-go.json` |
-| `--snapshot <file>` / `--from <url>` | 指定快照文件或地址 |
+| `--offline` | 不联网，配合 `--snapshot` 或 `--from` 使用 |
+| `--snapshot <文件>` / `--from <地址>` | 指定离线快照 |
+| `--emit <文件>` | 反过来，把当前线上模型导出一份快照 |
 | `--prune` | 删掉网关已下线的模型（默认保留） |
-| `--root <dir>` | 装在非默认位置时指定搜索目录 |
+| `--root <目录>` | 装在非默认位置时指定搜索目录 |
 
-## 几点实话
+## 说明
 
-- 桌面版升级后会覆盖安装目录，那份冻结的清单又回来了，得重跑一次。
 - 改的是 app 目录里的文件，macOS 装在 `/Applications` 时可能需要 sudo。
-- 只在 Windows 上实测过。Linux/macOS 只有 CI 里拿假目录跑的冒烟测试，没在真机验证。
-- 只动那一个 json，覆盖前留 `.bak-<时间戳>`，出问题拷回去就行。
+- 覆盖前会留 `.bak-<时间戳>`，出问题拷回去就行。
+- 只在 Windows 上实测过。
+- 模型列表来自 `https://opencode.ai/zen/go/v1/models`，元数据（上下文长度、价格、推理档位）来自 [models.dev](https://models.dev)。
 
-## 数据来源
-
-模型列表来自 `https://opencode.ai/zen/go/v1/models`，元数据（上下文长度、价格、推理档位）来自 [models.dev](https://models.dev)（MIT）。
-
-仓库里的 `catalog/` 是 GitHub Actions 每天刷新的快照，给不方便一直联网的人用。
-
-跟 OpenCode、DataElement、DeepSeek 都没有关系，`catalog/` 里只是公开的模型元数据。
+跟 OpenCode、DataElement、DeepSeek 都没有关系。

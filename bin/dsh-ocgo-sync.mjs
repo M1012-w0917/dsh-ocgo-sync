@@ -38,7 +38,6 @@ const PROTOCOL_BY_NPM = {
 const GATEWAY_MODELS_URL = 'https://opencode.ai/zen/go/v1/models';
 const MODELS_DEV_URL = 'https://models.dev/api.json';
 const DEFAULT_SNAPSHOT = path.join(REPO_ROOT, 'catalog', 'opencode-go.json');
-const DEFAULT_SNAPSHOT_URL = 'https://api.github.com/repos/M1012-w0917/dsh-ocgo-sync/contents/catalog/opencode-go.json';
 
 // 网关 id 与 models.dev 元数据 id 不一致时的兜底映射
 const FALLBACK_META_ID = { 'deepseek-flash': 'deepseek-v4.1-flash', 'hy3-preview': 'hy3' };
@@ -96,7 +95,7 @@ function printHelp() {
     '选项:',
     '  --list              只列出找到的目录文件与模型数，不做修改',
     '  --dry-run           显示将要发生的变更，但不写盘',
-    '  --offline           不联网，改用仓库内的 catalog 快照',
+    '  --offline           不联网，配合 --snapshot / --from 使用',
     '  --snapshot <file>   指定快照文件（配合 --offline）',
     '  --from <url>        指定快照 URL',
     '  --prune             删除网关已下线且快照里也没有的模型（默认保留）',
@@ -382,12 +381,10 @@ async function loadLive() {
 
 async function loadSnapshot(opts) {
   if (opts.snapshot) return readCatalog(opts.snapshot);
-  const url = opts.from || (DEFAULT_SNAPSHOT_URL.indexOf('OWNER') >= 0 ? null : DEFAULT_SNAPSHOT_URL);
-  if (url) {
-    try { return await fetchJson(url, 30000, '快照'); } catch (e) { if (opts.from) throw e; }
-  }
+  if (opts.from) return fetchJson(opts.from, 30000, '快照');
   if (fs.existsSync(DEFAULT_SNAPSHOT)) return readCatalog(DEFAULT_SNAPSHOT);
-  throw new Error('没有可用的快照文件，请用 --snapshot 指定，或去掉 --offline');
+  throw new Error('离线模式需要一份快照：用 --snapshot <文件> 或 --from <地址> 指定。\n'
+    + '  （快照可以用 --emit <文件> 自己生成，或直接去掉 --offline 走联网模式）');
 }
 
 // ---------------------------------------------------------------- 写盘
