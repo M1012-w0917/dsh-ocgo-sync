@@ -1,0 +1,30 @@
+{
+  "name": "dsh-ocgo-sync",
+  "version": "1.0.0",
+  "description": "Sync the OpenCode Go model catalog for DSH (CLI runtime and DSH Desktop)",
+  "type": "module",
+  "bin": {
+    "dsh-ocgo-sync": "bin/dsh-ocgo-sync.mjs"
+  },
+  "files": [
+    "bin",
+    "catalog",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "opencode",
+    "model-catalog"
+  ],
+  "scripts": {
+    "list": "node bin/dsh-ocgo-sync.mjs --list",
+    "emit": "node bin/dsh-ocgo-sync.mjs --emit catalog/opencode-go.json"
+  }
+}

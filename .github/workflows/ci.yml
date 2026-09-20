@@ -1,0 +1,61 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 用一份「出厂版」目录文件当夹具，模拟 DSH Desktop 的初始状态：
+      # 27 个模型、没有 deepseek-v4.1-flash。
+      - name: Build fixture
+        shell: bash
+        run: |
+          mkdir -p fixture/Programs/DSH\ Desktop/resources/app/node_modules/@earendil-works/pi-ai/dist/providers/data
+          node -e "
+          const fs = require('fs');
+          const snap = JSON.parse(fs.readFileSync('catalog/opencode-go.json', 'utf8'));
+          const j = JSON.parse(JSON.stringify(snap));
+          for (const g of Object.keys(j)) {
+            for (const id of Object.keys(j[g])) {
+              if (id === 'deepseek-v4.1-flash' || id === 'union-alpha') delete j[g][id];
+            }
+          }
+          const out = 'fixture/Programs/DSH Desktop/resources/app/node_modules/@earendil-works/pi-ai/dist/providers/data/opencode-go.json';
+          fs.mkdirSync(require('path').dirname(out), { recursive: true });
+          fs.writeFileSync(out, JSON.stringify(j, null, 2));
+          "
+
+      - name: Run offline sync against fixture
+        run: node bin/dsh-ocgo-sync.mjs --offline --root fixture
+
+      - name: Assert the new model appeared
+        shell: bash
+        run: |
+          node -e "
+          const fs = require('fs');
+          const p = 'fixture/Programs/DSH Desktop/resources/app/node_modules/@earendil-works/pi-ai/dist/providers/data/opencode-go.json';
+          const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+          const ids = new Set(Object.keys(j['openai-completions'] || {}));
+          if (!ids.has('deepseek-v4.1-flash')) { console.error('missing deepseek-v4.1-flash'); process.exit(1); }
+          const d = j['openai-completions']['deepseek-v4.1-flash'];
+          if (!d.compat) { console.error('expected compat to be inherited from a sibling'); process.exit(1); }
+          console.log('ok, models: ' + ids.size);
+          "
+
+      - name: Check the backup file was written
+        shell: bash
+        run: ls fixture/Programs/DSH\ Desktop/resources/app/node_modules/@earendil-works/pi-ai/dist/providers/data/
