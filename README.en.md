@@ -1,10 +1,10 @@
 # dsh-ocgo-sync
 
-DSH keeps its model list in a data file inside the `pi-ai` package rather than in any config:
+DeepSeek Harness keeps its model list in a data file inside the `pi-ai` package rather than in any config:
 
     @earendil-works/pi-ai/dist/providers/data/opencode-go.json
 
-The CLI runtime (`~/.dsh-runtime`) refreshes that file on every launch. DSH Desktop doesn't — it uses a copy frozen at build time.
+The CLI runtime (`~/.dsh-runtime`) refreshes that file on every launch. the desktop app doesn't — it uses a copy frozen at build time.
 
 So you end up with the gateway serving `deepseek-v4.1-flash`, the CLI offering it in the picker, and the desktop app still stopping at `deepseek-v4-flash`.
 
@@ -32,9 +32,9 @@ That one shells out to `git`; without it npm fails with `spawn git ENOENT`.
 
 ## Restart afterwards
 
-The catalog is read once at startup, so DSH has to be restarted.
+The catalog is read once at startup, so DeepSeek Harness has to be restarted.
 
-One thing about DSH Desktop: closing the window is not enough. It spawns a separate node process for the harness, and while that process is alive it holds the session write handle. The UI then reports `SessionAlreadyOwnedError`, which looks like a broken model but is really a leftover process. Check Task Manager for stray `node.exe` first.
+One thing about the desktop app: closing the window is not enough. It spawns a separate node process for the harness, and while that process is alive it holds the session write handle. The UI then reports `SessionAlreadyOwnedError`, which looks like a broken model but is really a leftover process. Check Task Manager for stray `node.exe` first.
 
 ## Options
 

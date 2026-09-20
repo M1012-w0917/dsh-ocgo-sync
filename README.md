@@ -1,6 +1,6 @@
 # dsh-ocgo-sync
 
-DSH 的模型清单不在设置里，藏在 `pi-ai` 这个包里面：
+DeepSeek Harness 的模型清单不在设置里，藏在 `pi-ai` 这个包里面：
 
     @earendil-works/pi-ai/dist/providers/data/opencode-go.json
 
@@ -34,9 +34,9 @@ npx github:M1012-w0917/dsh-opencode-go-sync
 
 ## 改完记得重启
 
-模型清单只在启动时读一次，得重启 DSH 才生效。
+模型清单只在启动时读一次，得重启 DeepSeek Harness 才生效。
 
-桌面版有个坑：只关窗口不算退出。DSH Desktop 会另起一个 node 进程跑 harness，那个进程没退干净的话会一直占着会话的写句柄，界面会报 `SessionAlreadyOwnedError` —— 看起来像是模型坏了，其实是旧进程没走。任务管理器里确认没有残留的 `node.exe` 再重开。
+桌面版有个坑：只关窗口不算退出。桌面版会另起一个 node 进程跑 harness，那个进程没退干净的话会一直占着会话的写句柄，界面会报 `SessionAlreadyOwnedError` —— 看起来像是模型坏了，其实是旧进程没走。任务管理器里确认没有残留的 `node.exe` 再重开。
 
 ## 参数
 
