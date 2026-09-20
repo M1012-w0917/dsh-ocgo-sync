@@ -21,7 +21,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, '..');
 
@@ -382,12 +382,9 @@ async function loadLive() {
 
 async function loadSnapshot(opts) {
   if (opts.snapshot) return readCatalog(opts.snapshot);
-  const url = opts.from || (DEFAULT_SNAPSHOT_URL.indexOf('OWNER') >= 0 ? null : DEFAULT_SNAPSHOT_URL);
-  if (url) {
-    try { return await fetchJson(url, 30000, '快照'); } catch (e) { if (opts.from) throw e; }
-  }
+  if (opts.from) return await fetchJson(opts.from, 30000, '快照');
   if (fs.existsSync(DEFAULT_SNAPSHOT)) return readCatalog(DEFAULT_SNAPSHOT);
-  throw new Error('没有可用的快照文件，请用 --snapshot 指定，或去掉 --offline');
+  throw new Error('离线模式不会访问网络，但本地没有可用快照。请用 --snapshot <file> 指定快照，或使用包含 catalog/ 的 npm/仓库版本');
 }
 
 // ---------------------------------------------------------------- 写盘
@@ -403,12 +400,22 @@ async function writeCatalog(target, catalog, dryRun) {
   if (dryRun) return { bytes: Buffer.byteLength(text), backup: null };
   const backup = target + '.bak-' + stamp();
   await fsp.copyFile(target, backup);
-  await fsp.writeFile(target, text, 'utf8');
-  const check = readCatalog(target);
-  const got = catalogIds(check).length;
-  const want = catalogIds(catalog).length;
-  if (got !== want) throw new Error('写入校验失败: ' + got + ' != ' + want + '（备份在 ' + backup + '）');
-  return { bytes: Buffer.byteLength(text), backup };
+
+  try {
+    await fsp.writeFile(target, text, 'utf8');
+    const check = readCatalog(target);
+    if (JSON.stringify(check) !== JSON.stringify(catalog)) {
+      throw new Error('写入后的目录内容与预期不一致');
+    }
+    return { bytes: Buffer.byteLength(text), backup };
+  } catch (e) {
+    let restored = false;
+    try {
+      await fsp.copyFile(backup, target);
+      restored = true;
+    } catch { /* 保留原始错误；备份仍在 */ }
+    throw new Error('写入校验失败: ' + e.message + (restored ? '；已自动恢复备份' : '；请从备份恢复: ' + backup));
+  }
 }
 
 // ---------------------------------------------------------------- 主流程
