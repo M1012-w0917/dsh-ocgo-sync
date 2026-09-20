@@ -241,6 +241,19 @@ async function main() {
   }
   console.log('已上传 ' + tree.length + ' 个 blob');
 
+  // 使用 base_tree 创建 tree 时，未提及的旧文件会被保留；要模拟 git push，需显式删除本地已不存在的远端文件。
+  if (baseTree) {
+    const remote = await api('GET', '/repos/' + owner + '/' + name + '/git/trees/' + baseTree + '?recursive=1', token);
+    const localPaths = new Set(files.map((f) => f.rel));
+    let deleted = 0;
+    for (const item of remote.tree || []) {
+      if (item.type !== 'blob' || localPaths.has(item.path)) continue;
+      tree.push({ path: item.path, mode: '100644', type: 'blob', sha: null });
+      deleted += 1;
+    }
+    if (deleted) console.log('将删除远端已不存在于本地的文件: ' + deleted + ' 个');
+  }
+
   const newTree = await api('POST', '/repos/' + owner + '/' + name + '/git/trees', token,
     baseTree ? { base_tree: baseTree, tree } : { tree });
 
