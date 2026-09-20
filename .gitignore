@@ -3,4 +3,5 @@ node_modules/
 *.bak-*
 .bak-*
 .DS_Store
-Thumbs.db更新并发布.cmd
+Thumbs.db
+更新并发布.cmd
