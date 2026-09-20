@@ -1,5 +1,7 @@
 # dsh-ocgo-sync
 
+**简体中文** · [English](README.en.md)
+
 DeepSeek Harness 的模型清单并非配置项，而是 `pi-ai` 包内的一份数据文件：
 
     @earendil-works/pi-ai/dist/providers/data/opencode-go.json
@@ -66,4 +68,3 @@ Windows PowerShell 中请将 `curl` 替换为 `curl.exe`。
 - 模型列表来自 `https://opencode.ai/zen/go/v1/models`，元数据来自 [models.dev](https://models.dev)；`catalog/` 由 GitHub Actions 每日刷新。
 - 本工具与 OpenCode、DataElement、DeepSeek 均无关联。
 
-English: [README.en.md](README.en.md)

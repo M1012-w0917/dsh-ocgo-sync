@@ -1,5 +1,7 @@
 # dsh-ocgo-sync
 
+**English** · [简体中文](README.md)
+
 The model list of DeepSeek Harness is not a configuration item; it is a data file shipped inside the `pi-ai` package:
 
     @earendil-works/pi-ai/dist/providers/data/opencode-go.json
@@ -66,4 +68,3 @@ Two points to note:
 - The model list comes from `https://opencode.ai/zen/go/v1/models`; metadata comes from [models.dev](https://models.dev). `catalog/` is refreshed daily by GitHub Actions.
 - This project is not affiliated with OpenCode, DataElement or DeepSeek.
 
-[简体中文](README.md)
