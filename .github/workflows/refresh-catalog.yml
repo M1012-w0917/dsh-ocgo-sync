@@ -1,0 +1,50 @@
+name: refresh-catalog
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-catalog
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Regenerate catalog snapshot from gateway + models.dev
+        run: node bin/dsh-ocgo-sync.mjs --emit catalog/opencode-go.json
+
+      - name: Validate snapshot
+        run: |
+          node -e "
+          const fs = require('fs');
+          const j = JSON.parse(fs.readFileSync('catalog/opencode-go.json', 'utf8'));
+          const groups = ['anthropic-messages', 'openai-completions', 'openai-responses'];
+          const ids = new Set();
+          for (const g of groups) for (const id of Object.keys(j[g] || {})) ids.add(id);
+          if (ids.size < 5) { console.error('snapshot looks too small: ' + ids.size); process.exit(1); }
+          console.log('snapshot models: ' + ids.size);
+          "
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- catalog/opencode-go.json; then
+            echo "no change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalog/opencode-go.json
+          git commit -m "chore(catalog): refresh opencode-go models"
+          git push

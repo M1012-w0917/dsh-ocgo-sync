@@ -8,6 +8,7 @@
   },
   "files": [
     "bin",
+    "catalog",
     "README.md",
     "LICENSE"
   ],
