@@ -744,33 +744,6 @@
         "maxTokensField": "max_tokens"
       }
     },
-    "space-bunny-free": {
-      "id": "space-bunny-free",
-      "name": "Space Bunny Free",
-      "api": "openai-completions",
-      "provider": "opencode-go",
-      "baseUrl": "https://opencode.ai/zen/go/v1",
-      "reasoning": true,
-      "input": [
-        "text",
-        "image"
-      ],
-      "cost": {
-        "input": 0,
-        "output": 0,
-        "cacheRead": 0,
-        "cacheWrite": 0
-      },
-      "contextWindow": 1048576,
-      "maxTokens": 524288,
-      "thinkingLevelMap": {
-        "minimal": null,
-        "low": "low",
-        "medium": "medium",
-        "high": "high",
-        "max": "max"
-      }
-    },
     "longcat-2.5-preview-free": {
       "id": "longcat-2.5-preview-free",
       "name": "LongCat 2.5 Preview Free",
@@ -969,6 +942,60 @@
         "high": "high",
         "xhigh": null,
         "max": null
+      }
+    },
+    "space-bunny": {
+      "id": "space-bunny",
+      "name": "Space Bunny",
+      "api": "openai-completions",
+      "provider": "opencode-go",
+      "baseUrl": "https://opencode.ai/zen/go/v1",
+      "reasoning": true,
+      "input": [
+        "text",
+        "image"
+      ],
+      "cost": {
+        "input": 0.15,
+        "output": 0.6,
+        "cacheRead": 0.03,
+        "cacheWrite": 0
+      },
+      "contextWindow": 1048576,
+      "maxTokens": 524288,
+      "thinkingLevelMap": {
+        "minimal": null,
+        "low": "low",
+        "medium": "medium",
+        "high": "high",
+        "max": "max"
+      }
+    },
+    "space-bunny-free": {
+      "id": "space-bunny-free",
+      "name": "Space Bunny Free",
+      "api": "openai-completions",
+      "provider": "opencode-go",
+      "baseUrl": "https://opencode.ai/zen/go/v1",
+      "reasoning": true,
+      "input": [
+        "text",
+        "image"
+      ],
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "contextWindow": 1048576,
+      "maxTokens": 524288,
+      "thinkingLevelMap": {
+        "minimal": null,
+        "low": "low",
+        "medium": "medium",
+        "high": "high",
+        "max": "max"
       }
     },
     "union-alpha": {
