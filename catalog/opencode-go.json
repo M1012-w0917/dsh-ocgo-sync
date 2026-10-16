@@ -310,6 +310,37 @@
         "max": "max"
       }
     },
+    "grok-4.6": {
+      "id": "grok-4.6",
+      "name": "grok-4.6",
+      "api": "openai-completions",
+      "provider": "opencode-go",
+      "baseUrl": "https://opencode.ai/inference/go/v1",
+      "reasoning": false,
+      "input": [
+        "text"
+      ],
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "contextWindow": 1000000,
+      "maxTokens": 128000,
+      "compat": {
+        "sessionAffinityFormat": "openai-nosession"
+      },
+      "thinkingLevelMap": {
+        "off": null,
+        "minimal": null,
+        "low": "low",
+        "medium": "medium",
+        "high": "high",
+        "xhigh": "xhigh",
+        "max": null
+      }
+    },
     "glm-5.3-flash": {
       "id": "glm-5.3-flash",
       "name": "GLM-5.3-Flash",
@@ -757,9 +788,9 @@
         "maxTokensField": "max_tokens"
       }
     },
-    "step-5-preview-free": {
-      "id": "step-5-preview-free",
-      "name": "Step 5 Preview Free",
+    "step-5-preview": {
+      "id": "step-5-preview",
+      "name": "Step 5 Preview",
       "api": "openai-completions",
       "provider": "opencode-go",
       "baseUrl": "https://opencode.ai/inference/go/v1",
@@ -769,9 +800,9 @@
         "image"
       ],
       "cost": {
-        "input": 0,
-        "output": 0,
-        "cacheRead": 0,
+        "input": 1,
+        "output": 2.7,
+        "cacheRead": 0.1,
         "cacheWrite": 0
       },
       "contextWindow": 1000000,
@@ -800,7 +831,7 @@
         "cacheRead": 0,
         "cacheWrite": 0
       },
-      "contextWindow": 262144,
+      "contextWindow": 1048576,
       "maxTokens": 131072,
       "thinkingLevelMap": {
         "minimal": null,
@@ -859,6 +890,33 @@
       },
       "contextWindow": 1000000,
       "maxTokens": 65536
+    },
+    "step-5-preview-free": {
+      "id": "step-5-preview-free",
+      "name": "Step 5 Preview Free",
+      "api": "openai-completions",
+      "provider": "opencode-go",
+      "baseUrl": "https://opencode.ai/inference/go/v1",
+      "reasoning": true,
+      "input": [
+        "text",
+        "image"
+      ],
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "contextWindow": 1000000,
+      "maxTokens": 65536,
+      "thinkingLevelMap": {
+        "minimal": null,
+        "low": "low",
+        "medium": "medium",
+        "high": "high",
+        "max": null
+      }
     },
     "deepseek-v4-flash": {
       "id": "deepseek-v4-flash",
@@ -1126,38 +1184,6 @@
     }
   },
   "openai-responses": {
-    "grok-4.6": {
-      "id": "grok-4.6",
-      "name": "Grok 4.6",
-      "api": "openai-responses",
-      "provider": "opencode-go",
-      "baseUrl": "https://opencode.ai/inference/go/v1",
-      "reasoning": true,
-      "input": [
-        "text",
-        "image"
-      ],
-      "cost": {
-        "input": 2,
-        "output": 6,
-        "cacheRead": 0.5,
-        "cacheWrite": 0
-      },
-      "compat": {
-        "sessionAffinityFormat": "openai-nosession"
-      },
-      "contextWindow": 500000,
-      "maxTokens": 500000,
-      "thinkingLevelMap": {
-        "off": null,
-        "minimal": null,
-        "low": "low",
-        "medium": "medium",
-        "high": "high",
-        "xhigh": "xhigh",
-        "max": null
-      }
-    },
     "grok-4.7": {
       "id": "grok-4.7",
       "name": "Grok 4.7",
