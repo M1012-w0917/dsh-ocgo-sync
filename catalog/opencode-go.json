@@ -549,7 +549,7 @@
         "input": 3,
         "output": 15,
         "cacheRead": 0.3,
-        "cacheWrite": 0
+        "cacheWrite": 3
       },
       "compat": {
         "supportsStore": false,
@@ -866,6 +866,40 @@
       },
       "contextWindow": 1000000,
       "maxTokens": 65536
+    },
+    "kimi-k3.1-pro": {
+      "id": "kimi-k3.1-pro",
+      "name": "Kimi K3.1 Pro",
+      "api": "openai-completions",
+      "provider": "opencode-go",
+      "baseUrl": "https://opencode.ai/inference/go/openai/v1",
+      "reasoning": true,
+      "input": [
+        "text",
+        "image"
+      ],
+      "cost": {
+        "input": 2,
+        "output": 10,
+        "cacheRead": 0.2,
+        "cacheWrite": 2
+      },
+      "contextWindow": 1048576,
+      "maxTokens": 131072,
+      "compat": {
+        "supportsStore": false,
+        "supportsDeveloperRole": false,
+        "maxTokensField": "max_tokens"
+      },
+      "thinkingLevelMap": {
+        "off": null,
+        "minimal": null,
+        "low": null,
+        "medium": null,
+        "high": null,
+        "xhigh": null,
+        "max": "max"
+      }
     },
     "minimax-m3.1-flash-free": {
       "id": "minimax-m3.1-flash-free",
