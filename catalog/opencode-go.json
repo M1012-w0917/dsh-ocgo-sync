@@ -707,6 +707,31 @@
         "max": null
       }
     },
+    "longcat-2.5-free": {
+      "id": "longcat-2.5-free",
+      "name": "LongCat 2.5 Free",
+      "api": "openai-completions",
+      "provider": "opencode-go",
+      "baseUrl": "https://opencode.ai/inference/go/openai/v1",
+      "reasoning": true,
+      "input": [
+        "text",
+        "image"
+      ],
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "contextWindow": 1000000,
+      "maxTokens": 262144,
+      "compat": {
+        "supportsStore": false,
+        "supportsDeveloperRole": false,
+        "maxTokensField": "max_tokens"
+      }
+    },
     "glm-5.1": {
       "id": "glm-5.1",
       "name": "GLM-5.1",
