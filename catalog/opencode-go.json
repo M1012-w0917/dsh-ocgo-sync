@@ -435,7 +435,7 @@
         "maxTokensField": "max_tokens"
       },
       "contextWindow": 1048576,
-      "maxTokens": 131072,
+      "maxTokens": 1048576,
       "thinkingLevelMap": {
         "off": null,
         "minimal": null,
@@ -618,7 +618,7 @@
         "cacheWrite": 2
       },
       "contextWindow": 1048576,
-      "maxTokens": 131072,
+      "maxTokens": 1048576,
       "compat": {
         "supportsStore": false,
         "supportsDeveloperRole": false,
